@@ -1,109 +1,8 @@
-"use client";
-
-import * as THREE from "three";
-import { Canvas } from "@react-three/fiber";
-import { ContactShadows, Float, Environment } from "@react-three/drei";
-import { Suspense, useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-
-export function Shapes() {
-  return (
-    <div className="row-span-1 row-start-1 -mt-9 aspect-square md:col-span-1 md:col-start-2 md:mt-0">
-      <Canvas
-        className="z-0"
-        shadows
-        gl={{ antialias: false }}
-        dpr={[1, 1.5]}
-        camera={{ position: [0, 0, 25], fov: 30, near: 1, far: 40 }}
-      >
-        <Suspense fallback={null}>
-          <Geometries />
-          <ContactShadows
-            position={[0, -3.5, 0]}
-            opacity={0.65}
-            scale={40}
-            blur={1}
-            far={9}
-          />
-          <Environment preset="studio" />
-        </Suspense>
-      </Canvas>
-    </div>
-  );
-}
-
-function Geometries() {
-  const geometries = [
-    {
-      id: "gem",
-      position: [0, 0, 0] as [number, number, number],
-      r: 0.3,
-      geometry: new THREE.IcosahedronGeometry(3), // Gem
-    },
-    {
-      id: "pill",
-      position: [1, -0.75, 4] as [number, number, number],
-      r: 0.4,
-      geometry: new THREE.CapsuleGeometry(0.5, 1.6, 2, 16), // Pill
-    },
-    {
-      id: "soccer",
-      position: [-1.4, 2, -4] as [number, number, number],
-      r: 0.6,
-      geometry: new THREE.DodecahedronGeometry(1.5), // Soccer ball
-    },
-    {
-      id: "donut",
-      position: [-0.8, -0.75, 5] as [number, number, number],
-      r: 0.5,
-      geometry: new THREE.TorusGeometry(0.6, 0.25, 16, 32), // Donut
-    },
-    {
-      id: "diamond",
-      position: [1.6, 1.6, -4] as [number, number, number],
-      r: 0.7,
-      geometry: new THREE.OctahedronGeometry(1.5), // Diamond
-    },
-  ];
-
-  const soundEffects = [
-    new Audio("/sounds/hit2.ogg"),
-    new Audio("/sounds/hit3.ogg"),
-    new Audio("/sounds/hit4.ogg"),
-  ];
-
-  const materials: THREE.Material[] = [
-    new THREE.MeshNormalMaterial(),
-    new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0 }),
-    new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.4 }),
-    new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.1 }),
-    new THREE.MeshStandardMaterial({ color: 0x8e44ad, roughness: 0.1 }),
-    new THREE.MeshStandardMaterial({ color: 0x1abc9c, roughness: 0.1 }),
-    new THREE.MeshStandardMaterial({ color: 0x2c3e50, roughness: 0.1 }),
-    new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.1 }),
-    new THREE.MeshStandardMaterial({
-      roughness: 0,
-      metalness: 0.7,
-      color: 0x2980b9,
-    }),
-    new THREE.MeshStandardMaterial({
-      color: 0x2c3e50,
-      roughness: 0.1,
-      metalness: 0.7,
-    }),
-  ];
-
-  return geometries.map(({ id, position, r, geometry }) => (
-    <Geometry
-      key={id} // Unique key based on id
-      position={position.map((p) => p * 2) as [number, number, number]}
-      geometry={geometry}
-      soundEffects={soundEffects}
-      materials={materials}
-      r={r}
-    />
-  ));
-}
+import * as THREE from 'three';
+import { useRef, useState, useEffect } from 'react';
+import { Float } from '@react-three/drei';
+import { gsap } from 'gsap';
+import { ThreeEvent } from '@react-three/fiber';
 
 interface GeometryProps {
   r: number;
@@ -125,8 +24,8 @@ function Geometry({
 
   const getRandomMaterial = () => gsap.utils.random(materials);
 
-  const handleClick = (e: THREE.Event) => {
-    const mesh = e.object as THREE.Mesh;
+  const handleClick = (e: ThreeEvent<MouseEvent>) => {
+    const mesh = e.object as THREE.Mesh; // Cast to THREE.Mesh
 
     // Play sound safely
     const sound = gsap.utils.random(soundEffects);
@@ -153,18 +52,21 @@ function Geometry({
   };
 
   useEffect(() => {
-    let ctx = gsap.context(() => {
-      setVisible(true);
-      gsap.from(meshRef.current?.scale, {
-        x: 0,
-        y: 0,
-        z: 0,
-        duration: gsap.utils.random(0.8, 1.2),
-        ease: "elastic.out(1,0.3)",
-        delay: gsap.utils.random(0, 0.5),
+    // Ensure meshRef.current is not null
+    if (meshRef.current) {
+      let ctx = gsap.context(() => {
+        setVisible(true);
+        gsap.from(meshRef.current.scale, {
+          x: 0,
+          y: 0,
+          z: 0,
+          duration: gsap.utils.random(0.8, 1.2),
+          ease: "elastic.out(1,0.3)",
+          delay: gsap.utils.random(0, 0.5),
+        });
       });
-    });
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }
   }, []);
 
   return (
@@ -177,8 +79,10 @@ function Geometry({
           onPointerOut={handlePointerOut}
           visible={visible}
           material={getRandomMaterial()}
-        ></mesh>
+        />
       </Float>
     </group>
   );
 }
+
+export default Geometry;
