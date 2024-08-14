@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/prismicio";
 
 import ContentBody from "@/components/ContentBody";
-import { formatDate } from "@/utils/formatDate";
+
 
 type Params = { uid: string };
 
