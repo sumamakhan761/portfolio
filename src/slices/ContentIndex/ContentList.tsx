@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { asImageSrc, isFilled } from "@prismicio/client";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -17,7 +17,7 @@ type ContentListProps = {
 };
 
 export default function ContentList({
-  items = [],  // Default to an empty array
+  items = [],
   contentType,
   fallbackItemImage,
   viewMoreText = "Read More",
@@ -33,44 +33,42 @@ export default function ContentList({
   const urlPrefix = contentType === "Project" ? "/project" : "/blog";
 
   useEffect(() => {
-    // Animate list-items in with a stagger
     let ctx = gsap.context(() => {
       itemsRef.current.forEach((item, index) => {
-        gsap.fromTo(
-          item,
-          {
-            opacity: 0,
-            y: 20,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1.3,
-            ease: "elastic.out(1,0.3)",
-            stagger: 0.2,
-            scrollTrigger: {
-              trigger: item,
-              start: "top bottom-=100px",
-              end: "bottom center",
-              toggleActions: "play none none none",
+        if (item) {
+          gsap.fromTo(
+            item,
+            {
+              opacity: 0,
+              y: 20,
             },
-          },
-        );
+            {
+              opacity: 1,
+              y: 0,
+              duration: 1.3,
+              ease: "elastic.out(1,0.3)",
+              stagger: 0.2,
+              scrollTrigger: {
+                trigger: item,
+                start: "top bottom-=100px",
+                end: "bottom center",
+                toggleActions: "play none none none",
+              },
+            }
+          );
+        }
       });
 
-      return () => ctx.revert(); // cleanup!
+      return () => ctx.revert();
     }, component);
   }, []);
 
   useEffect(() => {
-    // Mouse move event listener
     const handleMouseMove = (e: MouseEvent) => {
       const mousePos = { x: e.clientX, y: e.clientY + window.scrollY };
-      // Calculate speed and direction
       const speed = Math.sqrt(Math.pow(mousePos.x - lastMousePos.current.x, 2));
 
       let ctx = gsap.context(() => {
-        // Animate the image holder
         if (currentItem !== null) {
           const maxY = window.scrollY + window.innerHeight - 350;
           const maxX = window.innerWidth - 250;
@@ -78,7 +76,7 @@ export default function ContentList({
           gsap.to(revealRef.current, {
             x: gsap.utils.clamp(0, maxX, mousePos.x - 110),
             y: gsap.utils.clamp(0, maxY, mousePos.y - 160),
-            rotation: speed * (mousePos.x > lastMousePos.current.x ? 1 : -1), // Apply rotation based on speed and direction
+            rotation: speed * (mousePos.x > lastMousePos.current.x ? 1 : -1),
             ease: "back.out(2)",
             duration: 1.3,
           });
@@ -90,7 +88,7 @@ export default function ContentList({
           });
         }
         lastMousePos.current = mousePos;
-        return () => ctx.revert(); // cleanup!
+        return () => ctx.revert();
       }, component);
     };
 
@@ -100,6 +98,10 @@ export default function ContentList({
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, [hovering, currentItem]);
+
+  const setItemRef = useCallback((el: HTMLLIElement | null, index: number) => {
+    itemsRef.current[index] = el;
+  }, []);
 
   const onMouseEnter = (index: number) => {
     setCurrentItem(index);
@@ -111,16 +113,10 @@ export default function ContentList({
     setCurrentItem(null);
   };
 
-  // Ensure items is not null or undefined before mapping
-  const contentImages = items && items.length > 0 ? items.map((item, index) => {
-    console.log(`Processing item at index ${index}:`, item);
-
-    // Check if item, item.data, and item.data.image exist
-    const image = item && item.data && isFilled.image(item.data.hower_image)
-      ? item.data.hower_image // Use the actual image if it's filled
-      : fallbackItemImage; // Use fallback if it's not filled
-
-    console.log(`Image for item at index ${index}:`, image);
+  const contentImages = items.map((item, index) => {
+    const image = item?.data && isFilled.image(item.data.hower_image)
+      ? item.data.hower_image
+      : fallbackItemImage;
 
     return asImageSrc(image, {
       fit: "crop",
@@ -128,13 +124,8 @@ export default function ContentList({
       h: 320,
       exp: -10,
     });
-  }) : [];
+  });
 
-  console.log('Final contentImages:', contentImages);
-
-
-
-  // Preload images
   useEffect(() => {
     contentImages.forEach((url) => {
       if (!url) return;
@@ -150,10 +141,10 @@ export default function ContentList({
         className="grid border-b border-b-slate-100"
         onMouseLeave={onMouseLeave}
       >
-        {items && items.length > 0 ? items.map((post, index) => (
+        {items.length > 0 ? items.map((post, index) => (
           <li
             key={index}
-            ref={(el) => (itemsRef.current[index] = el)}
+            ref={(el) => setItemRef(el, index)}
             onMouseEnter={() => onMouseEnter(index)}
             className="list-item opacity-0"
           >
@@ -183,7 +174,6 @@ export default function ContentList({
           </li>
         )}
 
-        {/* Hover element */}
         <div
           className="hover-reveal pointer-events-none absolute left-0 top-0 -z-10 h-[320px] w-[220px] rounded-lg bg-cover bg-center opacity-0 transition-[background] duration-300"
           style={{

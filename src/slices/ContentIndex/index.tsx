@@ -18,7 +18,7 @@ const ContentIndex = async ({
   const client = createClient();
   const projects = await client.getAllByType("project");
 
-  const items = slice.primary.content_type === "Project" ? projects : null;
+  const items = slice.primary.content_type === "Project" ? projects : projects;
 
   return (
     <Bounded
@@ -34,7 +34,7 @@ const ContentIndex = async ({
         </div>
       )}
       <ContentList
-        items={items}
+       items={items}
         contentType={slice.primary.content_type}
         viewMoreText={slice.primary.view_more_text}
         fallbackItemImage={slice.primary.fallback_item_image}
