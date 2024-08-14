@@ -1,0 +1,40 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"heading": {
+				"__TYPE__": "FieldContent",
+				"value": "meat",
+				"type": "Text"
+			},
+			"title": {
+				"__TYPE__": "FieldContent",
+				"value": "oxygen",
+				"type": "Text"
+			},
+			"time_period": {
+				"__TYPE__": "FieldContent",
+				"value": "flame",
+				"type": "Text"
+			},
+			"institution": {
+				"__TYPE__": "FieldContent",
+				"value": "globe",
+				"type": "Text"
+			},
+			"description": {
+				"__TYPE__": "StructuredTextContent",
+				"value": [
+					{
+						"type": "paragraph",
+						"content": {
+							"text": "Anim deserunt sunt voluptate proident. Enim nulla ullamco est officia tempor do nostrud. Eu consequat consectetur id amet ullamco tempor nisi commodo laborum adipisicing excepteur nostrud."
+						}
+					}
+				]
+			}
+		},
+		"items": []
+	}
+]
