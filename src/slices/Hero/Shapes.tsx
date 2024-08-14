@@ -25,7 +25,7 @@ function Geometry({
   const getRandomMaterial = () => gsap.utils.random(materials);
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
-    const mesh = e.object as THREE.Mesh; // Cast to THREE.Mesh
+    const mesh = e.object as THREE.Mesh;
 
     // Play sound safely
     const sound = gsap.utils.random(soundEffects);
@@ -40,7 +40,10 @@ function Geometry({
       yoyo: true,
     });
 
-    mesh.material = getRandomMaterial();
+    // Ensure mesh.material is a valid material before changing it
+    if (mesh.material) {
+      mesh.material = getRandomMaterial();
+    }
   };
 
   const handlePointerOver = () => {
@@ -56,23 +59,26 @@ function Geometry({
     if (meshRef.current) {
       let ctx = gsap.context(() => {
         setVisible(true);
-        gsap.from(meshRef.current.scale, {
-          x: 0,
-          y: 0,
-          z: 0,
-          duration: gsap.utils.random(0.8, 1.2),
-          ease: "elastic.out(1,0.3)",
-          delay: gsap.utils.random(0, 0.5),
-        });
+        if (meshRef.current) {
+          gsap.from(meshRef.current.scale, {
+            x: 0,
+            y: 0,
+            z: 0,
+            duration: gsap.utils.random(0.8, 1.2),
+            ease: "elastic.out(1,0.3)",
+            delay: gsap.utils.random(0, 0.5),
+          });
+        }
       });
       return () => ctx.revert();
     }
   }, []);
 
   return (
-    <group position={position} ref={meshRef}>
+    <group position={position}>
       <Float speed={5 * r} rotationIntensity={6 * r} floatIntensity={5 * r}>
         <mesh
+          ref={meshRef} // Correctly assigned ref for mesh
           geometry={geometry}
           onClick={handleClick}
           onPointerOver={handlePointerOver}
