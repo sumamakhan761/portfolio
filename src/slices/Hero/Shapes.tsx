@@ -8,7 +8,7 @@ import { gsap } from "gsap";
 
 export function Shapes() {
   return (
-    <div className="row-span-1 row-start-1 -mt-9 aspect-square  md:col-span-1 md:col-start-2 md:mt-0">
+    <div className="row-span-1 row-start-1 -mt-9 aspect-square md:col-span-1 md:col-start-2 md:mt-0">
       <Canvas
         className="z-0"
         shadows
@@ -35,27 +35,32 @@ export function Shapes() {
 function Geometries() {
   const geometries = [
     {
-      position: [0, 0, 0],
+      id: "gem",
+      position: [0, 0, 0] as [number, number, number],
       r: 0.3,
       geometry: new THREE.IcosahedronGeometry(3), // Gem
     },
     {
-      position: [1, -0.75, 4],
+      id: "pill",
+      position: [1, -0.75, 4] as [number, number, number],
       r: 0.4,
       geometry: new THREE.CapsuleGeometry(0.5, 1.6, 2, 16), // Pill
     },
     {
-      position: [-1.4, 2, -4],
+      id: "soccer",
+      position: [-1.4, 2, -4] as [number, number, number],
       r: 0.6,
       geometry: new THREE.DodecahedronGeometry(1.5), // Soccer ball
     },
     {
-      position: [-0.8, -0.75, 5],
+      id: "donut",
+      position: [-0.8, -0.75, 5] as [number, number, number],
       r: 0.5,
       geometry: new THREE.TorusGeometry(0.6, 0.25, 16, 32), // Donut
     },
     {
-      position: [1.6, 1.6, -4],
+      id: "diamond",
+      position: [1.6, 1.6, -4] as [number, number, number],
       r: 0.7,
       geometry: new THREE.OctahedronGeometry(1.5), // Diamond
     },
@@ -67,7 +72,7 @@ function Geometries() {
     new Audio("/sounds/hit4.ogg"),
   ];
 
-  const materials = [
+  const materials: THREE.Material[] = [
     new THREE.MeshNormalMaterial(),
     new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0 }),
     new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.4 }),
@@ -88,10 +93,10 @@ function Geometries() {
     }),
   ];
 
-  return geometries.map(({ position, r, geometry }) => (
+  return geometries.map(({ id, position, r, geometry }) => (
     <Geometry
-      key={JSON.stringify(position)} // Unique key
-      position={position.map((p) => p * 2)}
+      key={id} // Unique key based on id
+      position={position.map((p) => p * 2) as [number, number, number]}
       geometry={geometry}
       soundEffects={soundEffects}
       materials={materials}
@@ -100,20 +105,32 @@ function Geometries() {
   ));
 }
 
-function Geometry({ r, position, geometry, soundEffects, materials }) {
-  const meshRef = useRef();
+interface GeometryProps {
+  r: number;
+  position: [number, number, number];
+  geometry: THREE.BufferGeometry;
+  soundEffects: HTMLAudioElement[];
+  materials: THREE.Material[];
+}
+
+function Geometry({
+  r,
+  position,
+  geometry,
+  soundEffects,
+  materials,
+}: GeometryProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
   const [visible, setVisible] = useState(false);
 
-  const startingMaterial = getRandomMaterial();
+  const getRandomMaterial = () => gsap.utils.random(materials);
 
-  function getRandomMaterial() {
-    return gsap.utils.random(materials);
-  }
+  const handleClick = (e: THREE.Event) => {
+    const mesh = e.object as THREE.Mesh;
 
-  function handleClick(e) {
-    const mesh = e.object;
-
-    gsap.utils.random(soundEffects).play();
+    // Play sound safely
+    const sound = gsap.utils.random(soundEffects);
+    sound && sound.play().catch(() => {});
 
     gsap.to(mesh.rotation, {
       x: `+=${gsap.utils.random(0, 2)}`,
@@ -125,7 +142,7 @@ function Geometry({ r, position, geometry, soundEffects, materials }) {
     });
 
     mesh.material = getRandomMaterial();
-  }
+  };
 
   const handlePointerOver = () => {
     document.body.style.cursor = "pointer";
@@ -138,7 +155,7 @@ function Geometry({ r, position, geometry, soundEffects, materials }) {
   useEffect(() => {
     let ctx = gsap.context(() => {
       setVisible(true);
-      gsap.from(meshRef.current.scale, {
+      gsap.from(meshRef.current?.scale, {
         x: 0,
         y: 0,
         z: 0,
@@ -159,7 +176,7 @@ function Geometry({ r, position, geometry, soundEffects, materials }) {
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
           visible={visible}
-          material={startingMaterial}
+          material={getRandomMaterial()}
         ></mesh>
       </Float>
     </group>
