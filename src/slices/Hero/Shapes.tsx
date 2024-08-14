@@ -59,16 +59,15 @@ function Geometry({
     if (meshRef.current) {
       let ctx = gsap.context(() => {
         setVisible(true);
-        if (meshRef.current) {
-          gsap.from(meshRef.current.scale, {
-            x: 0,
-            y: 0,
-            z: 0,
-            duration: gsap.utils.random(0.8, 1.2),
-            ease: "elastic.out(1,0.3)",
-            delay: gsap.utils.random(0, 0.5),
-          });
-        }
+        // Handle the null case safely
+        gsap.from(meshRef.current.scale, {
+          x: 0,
+          y: 0,
+          z: 0,
+          duration: gsap.utils.random(0.8, 1.2),
+          ease: "elastic.out(1,0.3)",
+          delay: gsap.utils.random(0, 0.5),
+        });
       });
       return () => ctx.revert();
     }
